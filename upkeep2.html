@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Guessing Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            padding-top: 50px;
+        }
+
+        header {
+            background: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .content h2 {
+            color: #333;
+        }
+
+        .content p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 18px;
+            background: #333;
+            color: #fff;
+            border: none;
+            text-decoration: none;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .form-input {
+            padding: 10px;
+            font-size: 18px;
+            width: 50%;
+        }
+
+        .form-submit {
+            padding: 10px 20px;
+            font-size: 18px;
+            background: #77b300;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Price Guessing Game</h1>
+        <button class="button" id="connectButton">Connect MetaMask</button>
+    </header>
+
+    <div class="content container">
+        <h2>Welcome to the Price Guessing Game</h2>
+        <p>Min Pool Amount: <span id="totalAmount">0 ETH</span></p>
+        <p>Mid Pool Amount: <span id="totalAmountMid">0 ETH</span></p>
+        <p>Mega Pool Amount: <span id="totalAmountMega">0 ETH</span></p>
+        <p>Latest ETH/USD Price: <span id="latestPrice">0 USD</span></p>
+
+        <h2>Submit Your Guess</h2>
+        <input type="number" class="form-input" id="guessedPrice" placeholder="Enter your guessed price">
+        <button class="form-submit" onclick="makeGuess()">Submit Min</button>
+        <button class="form-submit" onclick="makeGuessMid()">Submit Mid</button>
+        <button class="form-submit" onclick="makeGuessMega()">Submit Mega</button>
+        <!-- <button class="form-submit" onclick="performUpkeep()">Perform Upkeep</button> -->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script>
+        let accounts;
+        let contract; // 定義合約變量
+
+        const contractAddress = '0xF9C84Eea46C7E3C74d7A9Cf2A75d32D787AD9821';
+        const contractABI = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_refundAddress",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "_interval",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "_priceFeed",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Deposit",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "int256",
+                        "name": "guessedPrice",
+                        "type": "int256"
+                    }
+                ],
+                "name": "GuessMade",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "internalType": "int256",
+                        "name": "price",
+                        "type": "int256"
+                    }
+                ],
+                "name": "PriceUpdated",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "winner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "poolType",
+                        "type": "string"
+                    }
+                ],
+                "name": "RefundFailed",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "internalType": "bool",
+                        "name": "success",
+                        "type": "bool"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "UpkeepPerformed",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "winner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "poolType",
+                        "type": "string"
+                    }
+                ],
+                "name": "WinnerSelected",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "bytes",
+                        "name": "",
+                        "type": "bytes"
+                    }
+                ],
+                "name": "checkUpkeep",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "upkeepNeeded",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "bytes",
+                        "name": "",
+                        "type": "bytes"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "ethUsdCurrentPrice",
+                "outputs": [
+                    {
+                        "internalType": "int256",
+                        "name": "",
+                        "type": "int256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "getLatestPrice",
+                "outputs": [
+                    {
+                        "internalType": "int256",
+                        "name": "",
+                        "type": "int256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "guesses",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "int256",
+                        "name": "guessedPrice",
+                        "type": "int256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "guessesMega",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "int256",
+                        "name": "guessedPrice",
+                        "type": "int256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "guessesMid",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "int256",
+                        "name": "guessedPrice",
+                        "type": "int256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "interval",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "lastTimestamp",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "int256",
+                        "name": "_guessedPrice",
+                        "type": "int256"
+                    }
+                ],
+                "name": "makeGuess",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "int256",
+                        "name": "_guessedPrice",
+                        "type": "int256"
+                    }
+                ],
+                "name": "makeGuessMega",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "int256",
+                        "name": "_guessedPrice",
+                        "type": "int256"
+                    }
+                ],
+                "name": "makeGuessMid",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "bytes",
+                        "name": "",
+                        "type": "bytes"
+                    }
+                ],
+                "name": "performUpkeep",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "refundAddress",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalAmount",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalAmountMega",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalAmountMid",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "withdraw",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "stateMutability": "payable",
+                "type": "receive"
+            }
+        ];
+
+        async function makeGuess() {
+            if (!accounts || accounts.length === 0) {
+                alert('Please connect MetaMask first.');
+                return;
+            }
+
+            if (!contract) {
+                alert('Contract is not initialized.');
+                return;
+            }
+
+            const guessedPrice = document.getElementById('guessedPrice').value;
+
+            try {
+                const receipt = await contract.methods.makeGuess(guessedPrice).send({
+                    from: accounts[0],
+                    value: web3.utils.toWei('0.001', 'ether'),
+                    gas: 500000, // 設置較高的 gas limit
+                    gasPrice: web3.utils.toWei('50000000', 'wei') // 設置較高的 gas price
+
+                });
+                console.log('Guess submitted:', receipt);
+                alert('Guess submitted successfully!');
+            } catch (error) {
+                console.error('Error submitting guess:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        async function makeGuessMid() {
+            if (!accounts || accounts.length === 0) {
+                alert('Please connect MetaMask first.');
+                return;
+            }
+
+            if (!contract) {
+                alert('Contract is not initialized.');
+                return;
+            }
+
+            const guessedPrice = document.getElementById('guessedPrice').value;
+
+            try {
+                const receipt = await contract.methods.makeGuessMid(guessedPrice).send({
+                    from: accounts[0],
+                    value: web3.utils.toWei('0.01', 'ether'),
+                    gas: 500000, // 設置較高的 gas limit
+                    gasPrice: web3.utils.toWei('50000000', 'wei') // 設置較高的 gas price
+                });
+                console.log('Guess submitted:', receipt);
+                alert('Guess submitted successfully!');
+            } catch (error) {
+                console.error('Error submitting guess:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        async function makeGuessMega() {
+            if (!accounts || accounts.length === 0) {
+                alert('Please connect MetaMask first.');
+                return;
+            }
+
+            if (!contract) {
+                alert('Contract is not initialized.');
+                return;
+            }
+
+            const guessedPrice = document.getElementById('guessedPrice').value;
+
+            try {
+                const receipt = await contract.methods.makeGuessMega(guessedPrice).send({
+                    from: accounts[0],
+                    value: web3.utils.toWei('0.1', 'ether'),
+                    gas: 500000, // 設置較高的 gas limit
+                    gasPrice: web3.utils.toWei('50000000', 'wei') // 設置較高的 gas price
+                });
+                console.log('Guess submitted:', receipt);
+                alert('Guess submitted successfully!');
+            } catch (error) {
+                console.error('Error submitting guess:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        async function performUpkeep() {
+            if (!accounts || accounts.length === 0) {
+                alert('Please connect MetaMask first.');
+                return;
+            }
+
+            if (!contract) {
+                alert('Contract is not initialized.');
+                return;
+            }
+
+            try {
+                const receipt = await contract.methods.performUpkeep("0x").send({
+                    from: accounts[0],
+                    gas: 500000, // 設置較高的 gas limit
+                    gasPrice: web3.utils.toWei('50000000', 'wei') // 設置較高的 gas price
+                });
+                console.log('Upkeep performed:', receipt);
+            } catch (error) {
+                console.error('Error performing upkeep:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+        async function fetchGameData() {
+            if (!contract) {
+                console.error('Contract is not initialized.');
+                return;
+            }
+
+            try {
+                const totalAmount = await web3.eth.getBalance(contractAddress);
+                document.getElementById('totalAmount').innerText = web3.utils.fromWei(totalAmount, 'ether') + ' ETH';
+                const totalAmountMid = await web3.eth.getBalance(contractAddress);
+                document.getElementById('totalAmountMid').innerText = web3.utils.fromWei(totalAmountMid, 'ether') + ' ETH';
+                const totalAmountMega = await web3.eth.getBalance(contractAddress);
+                document.getElementById('totalAmountMega').innerText = web3.utils.fromWei(totalAmountMega, 'ether') + ' ETH';
+
+                const latestPrice = await contract.methods.getLatestPrice().call();
+                document.getElementById('latestPrice').innerText = latestPrice + ' USD';
+            } catch (error) {
+                console.error('Error fetching game data:', error);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', async () => {
+            const connectButton = document.getElementById('connectButton');
+
+            if (typeof window.ethereum !== 'undefined') {
+                window.web3 = new Web3(window.ethereum);
+
+                connectButton.addEventListener('click', async () => {
+                    try {
+                        accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        console.log('Connected:', accounts[0]);
+                        connectButton.innerText = `Connected: ${accounts[0]}`;
+
+                        // 初始化合約實例
+                        contract = new web3.eth.Contract(contractABI, contractAddress);
+                        console.log('Contract initialized:', contract);
+
+                        // 初始化後立即獲取數據
+                        fetchGameData();
+                    } catch (error) {
+                        console.error('User rejected the request:', error);
+                    }
+                });
+
+                window.onload = fetchGameData;
+            } else {
+                alert('MetaMask is not installed. Please install MetaMask and try again.');
+            }
+        });
+    </script>
+</body>
+
+</html>
