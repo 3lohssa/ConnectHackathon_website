@@ -6,7 +6,9 @@ title: Home
 <style>
     body {
         font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-        background-color: #f2f2f2;
+        background-image: url('https://example.com/your-background-image.jpg'); /* 替換為您的背景圖片URL */
+        background-size: cover;
+        background-attachment: fixed;
         margin: 0;
         padding: 0;
         display: flex;
@@ -19,7 +21,7 @@ title: Home
         width: 90%;
         max-width: 800px;
         margin: 50px auto;
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.9); /* 增加透明度效果 */
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         border-radius: 12px;
         overflow: hidden;
@@ -136,6 +138,17 @@ title: Home
         background: #e0e0e0;
     }
 
+    footer {
+        background: #999494;
+        color: #ffffff;
+        padding: 10px;
+        text-align: center;
+        border-top: 1px solid #ccc;
+        border-radius: 0 0 12px 12px;
+        margin-top: 50px;
+        width: 100%;
+    }
+
     @media (max-width: 600px) {
         .container {
             width: 95%;
@@ -178,6 +191,10 @@ title: Home
     <button class="form-submit" onclick="makeGuessMega()">Submit Mega</button>
 </div>
 
+<footer>
+    <p>ConnectHackathon_website</p>
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
 <script>
   let accounts;
@@ -191,33 +208,129 @@ title: Home
             {
                 "inputs": [
                     {
-                        "internalType": "address",
-                        "name": "_refundAddress",
-                        "type": "address"
-                    },
-                    {
                         "internalType": "uint256",
-                        "name": "_interval",
+                        "name": "initialSupply",
                         "type": "uint256"
                     },
                     {
                         "internalType": "address",
-                        "name": "_priceFeed",
+                        "name": "initialAccount",
                         "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "_kjTokenAddress",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "_kjFee",
-                        "type": "uint256"
                     }
                 ],
                 "stateMutability": "nonpayable",
                 "type": "constructor"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "allowance",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "needed",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "ERC20InsufficientAllowance",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "sender",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "balance",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "needed",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "ERC20InsufficientBalance",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "approver",
+                        "type": "address"
+                    }
+                ],
+                "name": "ERC20InvalidApprover",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "receiver",
+                        "type": "address"
+                    }
+                ],
+                "name": "ERC20InvalidReceiver",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "sender",
+                        "type": "address"
+                    }
+                ],
+                "name": "ERC20InvalidSender",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    }
+                ],
+                "name": "ERC20InvalidSpender",
+                "type": "error"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Approval",
+                "type": "event"
             },
             {
                 "anonymous": false,
@@ -231,11 +344,11 @@ title: Home
                     {
                         "indexed": false,
                         "internalType": "uint256",
-                        "name": "amount",
+                        "name": "value",
                         "type": "uint256"
                     }
                 ],
-                "name": "Deposit",
+                "name": "Burn",
                 "type": "event"
             },
             {
@@ -244,174 +357,86 @@ title: Home
                     {
                         "indexed": true,
                         "internalType": "address",
-                        "name": "user",
+                        "name": "from",
                         "type": "address"
                     },
-                    {
-                        "indexed": false,
-                        "internalType": "int256",
-                        "name": "guessedPrice",
-                        "type": "int256"
-                    }
-                ],
-                "name": "GuessMade",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": false,
-                        "internalType": "int256",
-                        "name": "price",
-                        "type": "int256"
-                    }
-                ],
-                "name": "PriceUpdated",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
                     {
                         "indexed": true,
                         "internalType": "address",
-                        "name": "winner",
+                        "name": "to",
                         "type": "address"
                     },
                     {
                         "indexed": false,
                         "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "string",
-                        "name": "poolType",
-                        "type": "string"
-                    }
-                ],
-                "name": "RefundFailed",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": false,
-                        "internalType": "bool",
-                        "name": "success",
-                        "type": "bool"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "timestamp",
+                        "name": "value",
                         "type": "uint256"
                     }
                 ],
-                "name": "UpkeepPerformed",
+                "name": "Transfer",
                 "type": "event"
             },
             {
-                "anonymous": false,
                 "inputs": [
                     {
-                        "indexed": true,
                         "internalType": "address",
-                        "name": "winner",
+                        "name": "owner",
                         "type": "address"
                     },
                     {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "string",
-                        "name": "poolType",
-                        "type": "string"
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
                     }
                 ],
-                "name": "WinnerSelected",
-                "type": "event"
-            },
-            {
-                "inputs": [
+                "name": "allowance",
+                "outputs": [
                     {
-                        "internalType": "bytes",
+                        "internalType": "uint256",
                         "name": "",
-                        "type": "bytes"
+                        "type": "uint256"
                     }
                 ],
-                "name": "checkUpkeep",
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "approve",
                 "outputs": [
                     {
                         "internalType": "bool",
-                        "name": "upkeepNeeded",
+                        "name": "",
                         "type": "bool"
-                    },
-                    {
-                        "internalType": "bytes",
-                        "name": "",
-                        "type": "bytes"
                     }
                 ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "ethUsdCurrentPrice",
-                "outputs": [
-                    {
-                        "internalType": "int256",
-                        "name": "",
-                        "type": "int256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "getLatestPrice",
-                "outputs": [
-                    {
-                        "internalType": "int256",
-                        "name": "",
-                        "type": "int256"
-                    }
-                ],
-                "stateMutability": "view",
+                "stateMutability": "nonpayable",
                 "type": "function"
             },
             {
                 "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "guesses",
-                "outputs": [
                     {
                         "internalType": "address",
-                        "name": "user",
+                        "name": "account",
                         "type": "address"
-                    },
-                    {
-                        "internalType": "int256",
-                        "name": "guessedPrice",
-                        "type": "int256"
-                    },
+                    }
+                ],
+                "name": "balanceOf",
+                "outputs": [
                     {
                         "internalType": "uint256",
-                        "name": "timestamp",
+                        "name": "",
                         "type": "uint256"
                     }
                 ],
@@ -422,226 +447,137 @@ title: Home
                 "inputs": [
                     {
                         "internalType": "uint256",
-                        "name": "",
+                        "name": "amount",
                         "type": "uint256"
                     }
                 ],
-                "name": "guessesMega",
-                "outputs": [
+                "name": "burn",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
                     {
                         "internalType": "address",
-                        "name": "user",
+                        "name": "account",
                         "type": "address"
                     },
                     {
-                        "internalType": "int256",
-                        "name": "guessedPrice",
-                        "type": "int256"
-                    },
-                    {
                         "internalType": "uint256",
-                        "name": "timestamp",
+                        "name": "amount",
                         "type": "uint256"
                     }
                 ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "guessesMid",
-                "outputs": [
-                    {
-                        "internalType": "address",
-                        "name": "user",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "int256",
-                        "name": "guessedPrice",
-                        "type": "int256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "timestamp",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "interval",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "kjFee",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "kjToken",
-                "outputs": [
-                    {
-                        "internalType": "contract IERC20",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "lastTimestamp",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "int256",
-                        "name": "_guessedPrice",
-                        "type": "int256"
-                    }
-                ],
-                "name": "makeGuess",
-                "outputs": [],
-                "stateMutability": "payable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "int256",
-                        "name": "_guessedPrice",
-                        "type": "int256"
-                    }
-                ],
-                "name": "makeGuessMega",
-                "outputs": [],
-                "stateMutability": "payable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "int256",
-                        "name": "_guessedPrice",
-                        "type": "int256"
-                    }
-                ],
-                "name": "makeGuessMid",
-                "outputs": [],
-                "stateMutability": "payable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "bytes",
-                        "name": "",
-                        "type": "bytes"
-                    }
-                ],
-                "name": "performUpkeep",
+                "name": "burnFrom",
                 "outputs": [],
                 "stateMutability": "nonpayable",
                 "type": "function"
             },
             {
                 "inputs": [],
-                "name": "refundAddress",
+                "name": "decimals",
                 "outputs": [
+                    {
+                        "internalType": "uint8",
+                        "name": "",
+                        "type": "uint8"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "name",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "symbol",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
                     {
                         "internalType": "address",
-                        "name": "",
+                        "name": "to",
                         "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "totalAmount",
-                "outputs": [
+                    },
                     {
                         "internalType": "uint256",
-                        "name": "",
+                        "name": "value",
                         "type": "uint256"
                     }
                 ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "totalAmountMega",
+                "name": "transfer",
                 "outputs": [
                     {
-                        "internalType": "uint256",
+                        "internalType": "bool",
                         "name": "",
-                        "type": "uint256"
+                        "type": "bool"
                     }
                 ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "totalAmountMid",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "withdraw",
-                "outputs": [],
                 "stateMutability": "nonpayable",
                 "type": "function"
             },
             {
-                "stateMutability": "payable",
-                "type": "receive"
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "transferFrom",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function"
             }
         ];
   const kjTokenABI = [
