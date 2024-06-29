@@ -195,7 +195,7 @@
     </header>
 
     <div class="content container">
-        <h2>Welcome to the Price Guessing Game</h2>
+        <h2>Welcome to the Price Guessing Game!</h2>
 
         <div class="pool-amounts">
             <div class="pool-amount">Min Pool Amount: <span id="totalAmount">0 ETH</span></div>
@@ -205,15 +205,13 @@
 
         <p>Latest ETH/USD Price: <span id="latestPrice">0 USD</span></p>
 
-        <h2>Submit Your Guess</h2>
+        <h2>Submit Your Guess of ETH/USD</h2>
         <input type="number" class="form-input" id="guessedPrice" placeholder="Enter your guessed price">
         <div class="submit-buttons">
             <button class="form-submit" onclick="makeGuess()">Submit Min</button>
             <button class="form-submit" onclick="makeGuessMid()">Submit Mid</button>
             <button class="form-submit" onclick="makeGuessMega()">Submit Mega</button>
-
-            <!-- Add the refresh button here -->
-            <button class="button" onclick="fetchGameData()">Refresh Data</button>
+            <button class="form-submit refresh-button" onclick="fetchGameData()">Refresh Data</button>
         </div>
     </div>
 
