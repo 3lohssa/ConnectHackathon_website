@@ -3,25 +3,180 @@ layout: default
 title: Home
 ---
 
-# Price Guessing Game
+<style>
+    body {
+        font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #333;
+    }
 
-Welcome to the Price Guessing Game.
+    .container {
+        width: 90%;
+        max-width: 800px;
+        margin: 50px auto;
+        background: #ffffff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
 
-- **Min Pool Amount**: <span id="totalAmount">0 ETH</span>
-- **Mid Pool Amount**: <span id="totalAmountMid">0 ETH</span>
-- **Mega Pool Amount**: <span id="totalAmountMega">0 ETH</span>
+    .container:hover {
+        transform: translateY(-5px);
+    }
 
-Latest ETH/USD Price: <span id="latestPrice">0 USD</span>
+    header {
+        background: #999494;
+        color: #ffffff;
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid #ccc;
+        border-radius: 12px 12px 0 0;
+    }
 
-## Submit Your Guess
+    header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+    }
 
-Enter your guessed price: <input type="number" class="form-input" id="guessedPrice" placeholder="Enter your guessed price">
+    .content {
+        padding: 40px 20px;
+        text-align: center;
+        border-radius: 0 0 12px 12px;
+    }
 
-<button class="form-submit" onclick="makeGuess()">Submit Min</button>
-<button class="form-submit" onclick="makeGuessMid()">Submit Mid</button>
-<button class="form-submit" onclick="makeGuessMega()">Submit Mega</button>
+    .content h2 {
+        color: #333;
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
 
-<button class="button" id="connectButton">Connect MetaMask</button>
+    .content p {
+        font-size: 16px;
+        line-height: 1.6;
+        margin: 10px 0;
+    }
+
+    .button {
+        display: inline-block;
+        padding: 12px 20px;
+        font-size: 16px;
+        background: #676666;
+        color: #fff;
+        border: none;
+        text-decoration: none;
+        margin-top: 20px;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background 0.3s, transform 0.3s;
+    }
+
+    .button:hover {
+        background: #c28340;
+        transform: translateY(-2px);
+    }
+
+    .form-input {
+        padding: 12px;
+        font-size: 16px;
+        width: 80%;
+        max-width: 300px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        transition: border-color 0.3s;
+    }
+
+    .form-input:focus {
+        border-color: #f2f2f2;
+    }
+
+    .form-submit {
+        padding: 12px 20px;
+        font-size: 16px;
+        background: #d2cbcb;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background 0.3s, transform 0.3s;
+        margin: 5px;
+    }
+
+    .form-submit:hover {
+        background: #0a3158;
+        transform: translateY(-2px);
+    }
+
+    .pool-amounts {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .pool-amount {
+        padding: 12px 20px;
+        font-size: 16px;
+        background: #f8f8f8;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        flex: 1;
+        transition: background 0.3s;
+    }
+
+    .pool-amount:hover {
+        background: #e0e0e0;
+    }
+
+    @media (max-width: 600px) {
+        .container {
+            width: 95%;
+            margin: 20px auto;
+        }
+
+        .form-input,
+        .form-submit {
+            width: calc(100% - 24px);
+            max-width: none;
+        }
+
+        .pool-amounts {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+
+<header>
+    <h1>Price Guessing Game</h1>
+    <button class="button" id="connectButton">Connect MetaMask</button>
+</header>
+
+<div class="content container">
+    <h2>Welcome to the Price Guessing Game</h2>
+
+    <div class="pool-amounts">
+        <div class="pool-amount">Min Pool Amount: <span id="totalAmount">0 ETH</span></div>
+        <div class="pool-amount">Mid Pool Amount: <span id="totalAmountMid">0 ETH</span></div>
+        <div class="pool-amount">Mega Pool Amount: <span id="totalAmountMega">0 ETH</span></div>
+    </div>
+
+    <p>Latest ETH/USD Price: <span id="latestPrice">0 USD</span></p>
+
+    <h2>Submit Your Guess</h2>
+    <input type="number" class="form-input" id="guessedPrice" placeholder="Enter your guessed price">
+    <button class="form-submit" onclick="makeGuess()">Submit Min</button>
+    <button class="form-submit" onclick="makeGuessMid()">Submit Mid</button>
+    <button class="form-submit" onclick="makeGuessMega()">Submit Mega</button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
 <script>
