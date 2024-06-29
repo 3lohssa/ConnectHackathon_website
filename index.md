@@ -2,10 +2,6 @@
 layout: default
 title: Home
 ---
-<<<<<<< HEAD
-=======
-
->>>>>>> bc448c4382a9e824ba74ba2841b3893062331b59
 <!DOCTYPE html>
 <html lang="en">
 
